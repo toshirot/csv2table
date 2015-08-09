@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<meta charset=utf-8>
+
+<!--[if IE]>
+<script src="./js/excanvas/excanvas-compressed.js" type="text/javascript" ></script>
+<![endif]-->
+<script src="./js/jquery-1.7.2.min.js" type="text/javascript"></script>
+<script src="./js/jquery.jqchart-0.03-beta-1.1.js" type="text/javascript" charset="utf-8"></script>
+<script src="./js/jquery.csv2table-0.02-b-4.8.js" type="text/javascript" charset="utf-8"></script>
+<script src="http://ccchart.org/js/ccchart.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+
+jQuery(function($){
+    var btns = document.querySelectorAll(".btn1")
+    for(var i=0;i<btns.length;i++){
+        if(btns.setAttribute)
+        btns.setAttribute("disabled","");
+    }
+
+    $("hr").css('background','gold')
+
+});
+
+</script>
+<style>
+body{
+  padding : 12px;
+}
+.samples{
+  margin:12px;margin-left:24px
+}
+.samples p{
+  padding:8px
+}
+
+
+pre{
+  padding:24px;padding-left:48px;width:95%;font:100 12px Courier New;background:#FFF9B8 ;border:1px solid #ddd ;
+}
+</style>
+<body>
+
+<!-- myadd1 --><script src="http://jsgt.org/ad/ad.js" charset="utf-8"></script>
+
+
+
+<!--//////////////   links    //////////////-->
+<div style="margin-top:20px;margin-bottom:20px;font-size:0.9em">
+<!script type="text/javascript" charset="utf-8"
+src="http://jsgt.org/google/jquerygoogle.js">
+</script>
+<hr>
+<!--//////////////   links    //////////////-->
+|<a href="http://jsgt.org/mt/01/"><font size="-1">Blog</font></a> |
+<a href="http://jsgt.org/lib/jquery/plugin/csv2table/v002/test.htm">Demo</a> |
+<a href="https://www.facebook.com/javascripting">Facbook JavaScript部</a> |
+ jQuery &#8250; Downloads &#8250; Plugins <a href="http://plugins.jquery.com/project/csv2table">&#8250; csv2table </a> |
+( <a href="http://ccchart.com/">ccchart</a>/ <a href="http://plugins.jquery.com/project/jQchart"> jQchart </a> )
+
+<br>
+nightly- testing themeroller width jQuery 1.3. <a href="http://jsgt.org/lib/jquery/plugin/csv2table/v002/test-tm.htm">test-tm.htm</a>
+<br>
+<a href="http://ngw.jp/~tato/wp/">blog</a>
+</div>
+
+
+<h1>jquery.csv2table.js</h1>
+
+<style>
+.addTop{
+  position:fixed;
+  top: 20px;
+  right: 20px;
+  text-align: right;
+  margin-bottom: 12px;
+  opacity: 0.8;
+}
+</style>
+<div class="addTop">
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- csv2table -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:234px;height:60px"
+     data-ad-client="ca-pub-7598465699071822"
+     data-ad-slot="4220519877"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+</div>
+
+エクセルなどで作ったCSVファイルを読み込み、クロスブラウザなテーブル表示を行うjQueryプラグイン
+
+<div style="color:red">最新版jquery.csv2table-0.02-b-4.8.jsについて：
+  <a href="http://ngw.jp/~tato/wp/?p=3505">http://ngw.jp/~tato/wp/?p=3505</a></div>
+
+<!-- p>2014.03.18 update version:csv2table-0.02-b-4.6 ダブルクオートインジェクションを無効化しました。line 309</p -->
+<p id="ver"></p><script>
+jQuery(function($){
+
+    $("#ver")
+      .html($.csv2table.ver)
+      .append(
+        $("<span> : </span><a target='update' href='http://jsgt.org/lib/jquery/plugin/csv2table/v002/js/jquery.csv2table-"+$.csv2table.version+".js'>Source</a> <div>updateMemo : <a target='update' href='"+$.csv2table.update+"'>Update</a>  </div><div>imges : <a target='img' href='http://jsgt.org/lib/jquery/plugin/csv2table/v002/img/'>etc..</a>(v0.02-b-4.1以降は、ソート画像などはプラグイン内にデフォルトで埋め込まれていますので、画像が無くてもcsv2table.jsだけで動作します)  </div>").css("color","#aaa")
+      )
+
+
+
+mkContentsFromANames(
+	"contents",
+	"<span style='color:#aaa;vertical-align:text-top'>[top]</span></a> "
+)
+.css({"font-size":"1.5em","font-weight":"900"});
+
+function  mkContentsFromANames(id,ToTopLinkHTML){
+	$("#"+id).before("<a name='"+id+"-top'></a>").append("<ul>")
+	return $("a[name]").filter("a[name!="+id+"-top]").each(function(){
+		var name=$(this).attr("name"),title=$(this).text(),encName=escape(name);
+		$(this).attr("name",encName)
+			.html("<div><a style='text-decoration:none' href='#"+id+"-top'>"+ToTopLinkHTML+title+"</div>")
+		$("#"+id).append(
+			"<li><a href='#"+ escape(encName)+"'>"+title+"</a></li>"
+		);
+	})
+}
+
+})
+
+</script>
+
+<!-- contents -->
+<div><h2>Contents</h2><ul id="contents"></ul></div>
+
+<div class="samples">
+
+
+<p><hr size="10"><a name="cssreset">デフォルトCSSのリセット方法</a>
+Reset the CSS ( default style sheet of csv2table  )<br>
+csv2tableのデフォルトCSSをリセットし、自由にCSS設定する。<br><br><br>
+
+<script>
+  //デフォルトCSSをリセットする。 リセット後はたとえば下記のようなCSSで設定してください
+//  $.csv2table.cssReset();
+</script>
+
+<a href="test-4.4.htm">このページに$.csv2table.cssReset()を適用したサンプル</a>
+
+<pre>&lt;script>
+
+  //デフォルトCSSをリセットする *リセットした場合は、たとえば下記のようなCSSで設定してください
+  $.csv2table.cssReset();
+
+&lt;/script>
+
+&lt;style>
+div.csv2table-div {
+  padding           : 10px;
+  margin            : 1px;
+}
+table.csv2table-table {
+  border-collapse   : collapse;
+  border-spacing    : 0px;
+  margin-bottom     : 10px;
+}
+th.csv2table-table-th{
+  border-color      : #eee #999 #777 #bbb;
+  border-style      : solid;
+  border-width      : 1px;
+  background-color  : rgba(124,100,0,0.5);
+  padding           : 12px;
+  font-size         : 12px;
+  text-align        : center;
+}
+td.csv2table-table-td{
+  border-color      : #eee #999 #777 #bbb;
+  border-style      : solid;
+  border-width      : 1px;
+  padding           : 12px;
+  font-size         : 12px;
+  text-align        : center;
+}
+
+/*先頭列のTD背景色をorangeにする*/
+td.csv2table-table-td:nth-child(1){
+  background-color  : orange;
+}
+
+th.csv2table-sortMark{
+
+}
+td.csv2table-hoboNum{
+
+}
+&lt;/style></pre>
+
+
+<p><hr size="10"><a name="nview0">Basic-1</a>
+Delimited by a line break (CRLF).one or more  fields, separated by commas.<br>
+列 カンマ区切り / 行 改行\r\n区切り<br><br><br>
+
+
+<div id="view0"></div>
+<script>
+$(function(){
+  $('#view0').csv2table('./data/Book12.csv');
+});
+</script>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;div id="view0">&lt;/div>
+&lt;script>
+$(function(){
+  <b>$('#view0').csv2table('./data/Book12.csv');</b>
+});
+&lt;/script></pre>
+
+
+<p><hr size="10"><a name="nview8">Basic-2 click and load</a>
+Delimited by a line break (CRLF).one or more  fields, separated by commas.<br>
+列 カンマ区切り / 行 改行\r\n区切り<br>
+<input class   = "btn1"
+       type    = "button"
+       onclick = "$('#view8').csv2table('./data/Book12.csv');"
+       value   = "Run">
+<p>
+<div id="view8"></div>
+</p>
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "<b>$('#view8').csv2table('./data/Book12.csv');</b>"
+       value   = "Run">
+
+&lt;div id="view8">&lt;/div>
+</pre><pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さる,10,"100,000 "
+2,タマ,ねこ,5,"80,000 "
+3,チヤー,いぬ,12,"5,000,000 "
+4,ピー,とり,1,"3,000 "</pre>
+</p>
+
+
+
+
+
+
+
+<p><hr size="10"><a name="nview40">setting.use  ( use ccchart )</a>
+列 カンマ区切り / 行 改行\r\n区切り + <a href="http://ccchart.com/">ccchart</a> ( version:<script>document.write(ccchart.aboutThis.version)</script> )<br>
+<br>
+
+
+<style>
+/* ラベル Y軸 */
+.jQchart-labelY-canvasMyID2{
+	font-size : 12px;
+}
+
+/* label Data */
+.jQchart-labelData-canvasMyID2{
+	font-size : 10px;
+}
+.jQchart-labelData-canvasMyID2 .csv2table-table{
+    width: 800px;
+}
+</style>
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:line#canvasMyID2',
+         minY     : 0,
+         title    : 'use ccchart type line'
+       });"
+       value   = "use: ccchart:line ">
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:line#canvasMyID2',
+         type     : 'line',
+         useMarker: 'css-ring',
+         lineWidth: 8,
+         borderWidth: 4,
+         markerWidth: 20,
+         colorSet :
+          ['#666','#aaa','#5b7e91','#4c6cb3','#eee'],
+         width    : 700,
+         title    : 'use ccchart type line, css-hybrid'
+       });"
+       value   = "use: ccchart:line + css-hybrid">
+
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:line#canvasMyID2',
+         minY     : 0,
+         bgGradient: {
+            'direction':'vertical',
+            'from':'#222',
+            'to'  :'#4c6cb3'
+         },
+         valColor : ['rgba(255,200,200,0.9)','rgba(255,0,255,0.9)','rgba(255,255,0,1)'],
+         colorSet :
+              ['#666','#aaa','#ccc'],
+         useMarker: 'arc',
+         markerWidth: 10,
+         width    : 600,
+         useVal   : 'yes',
+         title    : 'use ccchart type line'
+       });"
+       value   = "use: ccchart:line ">
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:bar#canvasMyID2',
+         title    : 'use ccchart type bar',
+         width    : 500
+       });"
+       value   = "use: ccchart:bar ">
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:stackedarea#canvasMyID2',
+         useVal   : 'yes',
+         title    : 'use ccchart type stackedarea'
+       });"
+       value   = "use: ccchart:stackedarea ">
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:stacked#canvasMyID2',
+         useVal   : 'yes',
+         title    : 'use ccchart type stacked'
+       });"
+       value   = "use: ccchart:stacked ">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:bezi2#canvasMyID2',
+         title    : 'use ccchart type bezi2'
+       });"
+       value   = "use: ccchart:bezi2 ">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:area#canvasMyID2',
+         title    : 'Area Chart',
+        'subTitle': '面チャートです',
+        'colorSet':
+              ['rgba(0,150,250,0.5)','rgba(200,0,250,0.4)','rgba(250,250,0,0.3)'],
+        'useMarker': 'arc'
+       });"
+       value   = "use: ccchart:area ">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:stacked%#canvasMyID2',
+         title    : 'use ccchart type stacked%'
+       });"
+       value   = "use: ccchart:stacked%">
+
+<br>
+<br>
+
+<canvas id="canvasMyID2"></canvas>
+<div id="view402"></div>
+
+<br>
+
+
+       <pre>&lt;!--[if IE]>
+&lt;script src="./js/excanvas/excanvas-compressed.js" type="text/javascript" >&lt;/script>
+&lt;![endif]-->
+&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+&lt;script src="./js/ccchart.js" charset="utf-8">&lt;/script>
+
+
+&lt;style>
+/* ラベル Y軸 */
+.jQchart-labelY-canvasMyID2{
+	font-size : 12px;
+}
+
+/* label Data */
+.jQchart-labelData-canvasMyID2{
+	font-size : 10px;
+}
+
+&lt;/style>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:line#canvasMyID2',
+         roundedUpMaxY: 0,
+         minY     : 0,
+         title    : 'use ccchart type line'
+       });"
+       value   = "use: ccchart:line ">
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:line#canvasMyID2',
+         roundedUpMaxY: 0,
+         type     : 'line',
+         useMarker: 'css-ring',
+         lineWidth: 8,
+         borderWidth: 4,
+         markerWidth: 20,
+         colorSet :
+          ['#666','#aaa','#5b7e91','#4c6cb3','#eee'],
+         width    : 700,
+         title    : 'use ccchart type line, css-hybrid'
+       });"
+       value   = "use: ccchart:line + css-hybrid">
+
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:line#canvasMyID2',
+         roundedUpMaxY: 0,
+         minY     : 0,
+         bgGradient: {
+            'direction':'vertical',
+            'from':'#222',
+            'to'  :'#4c6cb3'
+         },
+         valColor : ['rgba(255,200,200,0.9)','rgba(255,0,255,0.9)','rgba(255,255,0,1)'],
+         colorSet :
+              ['#666','#aaa','#ccc'],
+         useMarker: 'arc',
+         width    : 600,
+         useVal   : 'yes',
+         title    : 'use ccchart type line'
+       });"
+       value   = "use: ccchart:line ">
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:bar#canvasMyID2',
+         title    : 'use ccchart type bar',
+         width    : 500
+       });"
+       value   = "use: ccchart:bar ">
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:stackedarea#canvasMyID2',
+         useVal   : 'yes',
+         title    : 'use ccchart type stackedarea'
+       });"
+       value   = "use: ccchart:stackedarea ">
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:stacked#canvasMyID2',
+         useVal   : 'yes',
+         title    : 'use ccchart type stacked'
+       });"
+       value   = "use: ccchart:stacked ">
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:bezi2#canvasMyID2',
+         title    : 'use ccchart type bezi2'
+       });"
+       value   = "use: ccchart:bezi2 ">
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:area#canvasMyID2',
+         title    : 'Area Chart',
+        'subTitle': '面チャートです',
+        'colorSet':
+              ['rgba(0,150,250,0.5)','rgba(200,0,250,0.4)','rgba(250,250,0,0.3)'],
+        'useMarker': 'arc'
+       });"
+       value   = "use: ccchart:area ">
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view402').csv2table('./data/Book4chart.csv',{
+         use      : 'ccchart:stacked%#canvasMyID2',
+         title    : 'use ccchart type stacked%'
+       });"
+       value   = "use: ccchart:stacked%">
+
+&lt;br>
+
+&lt;canvas id="canvasMyID2">&lt;/canvas>
+&lt;div id="view402">&lt;/div>
+</pre><pre>名前,3,4,5,6,7,8,9,10,11,12,1,2
+理科,30,40,25,45,70,55,80,90,65,95,96,88
+社会,12,15,55,30,70,87,55,30,65,76,50,58
+算数,60,43,58,22,38,47,35,67,88,53,92,98</pre>
+
+</p>
+
+
+
+
+<p><hr size="10"><a name="nview40">setting.use  ( use jQchart )</a>
+列 カンマ区切り / 行 改行\r\n区切り + <a href="http://plugins.jquery.com/project/jQchart">jQchart</a> <script>document.write($.jQchart.ver)</script><br>
+<br>
+
+
+<style>
+/* ラベル Y軸 */
+.jQchart-labelY-canvasMyID{
+	font-size : 12px;
+}
+
+/* label Data */
+.jQchart-labelData-canvasMyID{
+	font-size : 10px;
+}
+</style>
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view40').csv2table('./data/Book4chart.csv',{
+         use      : 'jqchart:line#canvasMyID',
+         title    : 'This HTML is setting.config.<b>title</b>',
+         scaleY   : {min: 0,max:120,gap:10}
+       });"
+       value="use: jqchart:line ">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view40').csv2table('./data/Book4chart.csv',{
+         use      : 'jqchart:bar#canvasMyID',
+         title    : 'This HTML is setting.config.<b>title</b>',
+         scaleY   : {min: 0,max:100,gap:10}
+       });"
+       value="use: jqchart:bar ">
+
+<br>
+<br>
+
+<canvas id="canvasMyID" height="200"></canvas>
+<div id="view40"></div>
+
+<br>
+       <pre>&lt;!--[if IE]>
+&lt;script src="./js/excanvas/excanvas-compressed.js" type="text/javascript" >&lt;/script>
+&lt;![endif]-->
+&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.jqchart-<script>document.write($.jQchart.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;style>
+/* label Y  */
+.jQchart-labelY-canvasMyID{
+	font-size : 12px;
+}
+
+/* label Data */
+.jQchart-labelData-canvasMyID{
+	font-size : 10px;
+}
+&lt;/style>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view40').csv2table('./data/Book4chart.csv',{
+         <b>use      : 'jqchart:line#canvasMyID',</b>
+         title    : 'This HTML is setting.config.&lt;b>title&lt;/b>',
+         scaleY   : {min: 0,max:100,gap:10}
+       });"
+       value="use: jqchart:line ">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view40').csv2table('./data/Book4chart.csv',{
+         <b>use      : 'jqchart:bar#canvasMyID',</b>
+         title    : 'This HTML is setting.config.&lt;b>title&lt;/b>',
+         scaleY   : {min: 0,max:100,gap:10}
+       });"
+       value="use: jqchart:bar ">
+
+
+&lt;canvas id="canvasMyID" height="200">&lt;/canvas>
+&lt;div id="view40">&lt;/div>
+
+* setting.title and setting.scaleY were inherited from jQchart.setting.config</pre><pre>名前,3,4,5,6,7,8,9,10,11,12,1,2
+理科,30,40,25,45,70,55,80,90,65,95,96,88
+社会,12,15,55,30,70,87,55,30,65,76,50,58
+算数,60,43,58,22,38,47,35,67,88,53,92,98</pre>
+
+</p>
+
+<p><hr size="10"><a name="nview50">setting.sortable (sortable : false)</a>
+列 カンマ区切り / 行 改行\r\n区切り <br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view50').csv2table('./data/Book12-utf8.csv',{
+                    sortable : false
+                });"
+       value="Run">
+<p>
+<div id="view50"></div>
+</p>
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view50').csv2table('./data/Book12-utf8.csv',{
+                   <b>sortable : false</b>
+                });"
+       value="Run">
+
+&lt;div id="view50">&lt;/div>
+       </pre><pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さる,"10","100,000 "
+2,タマ,ねこ,"5","80,000 "
+3,チヤー,いぬ,"12","5,000,000 "</pre>
+
+</p>
+
+
+<p><hr size="10"><a name="nview51">setting.onload (onload : function)</a>
+列 カンマ区切り / 行 改行\r\n区切り <br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view51').csv2table('./data/Book12-utf8.csv',{
+                    onload : function(id,op,data,ary){
+                      $('#'+id).after('<br>1行目5列目は、'+ary[1][4]+'ですね')
+                    }
+                });"
+       value="Run">
+<p>
+<div id="view51"></div>
+</p>
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view51').csv2table('./data/Book12-utf8.csv',{
+             <b>onload : function(id,op,data,ary){</b>
+                           $('#'+id).after('&lt;p>1行目5列目は、'+ary[1][4]+'ですね&lt;/p>')
+                      <b>} </b>
+                });"
+       value="Run">
+
+&lt;div id="view51">&lt;/div>
+       </pre><pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さる,"10","100,000 "
+2,タマ,ねこ,"5","80,000 "
+3,チヤー,いぬ,"12","5,000,000 "</pre>
+
+</p>
+
+
+
+<p><hr size="10"><a name="nview542">onload後に 塗りわけ関数classifyByCol</a>
+@see <a href="http://jsgt.org/lib/jquery/plugin/csv2table/v002/csv2table.f.classify.htm">Function classifyByCol samples</a> <br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view542').csv2table('./data/classify.csv',{
+                    onload : function(id,op,data,ary){
+                       $.csv2table.f.classifyByCol(
+                         id,3,[
+                           ['>1','#D0FFE0'],
+                           ['>3','#98D9FF'],
+                           ['>5','#8CA9FF']
+                         ]
+                       )
+                    }
+                });"
+       value="classifyByCol">
+
+<p>
+<div id="view542"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#classifyTest').csv2table('./data/classify.csv',{
+                    onload : function(id,op,data,ary){ <b>
+                       $.csv2table.f.classifyByCol(
+                         id,3,[
+                           ['>1','#D0FFE0'],
+                           ['>3','#98D9FF'],
+                           ['>5','#8CA9FF']
+                         ]
+                       )</b>
+                    }
+                });"
+       value="classifyByCol">
+
+&lt;div id="view542">&lt;/div>
+       </pre><pre>NO,Name,Kinds,Age,Yen
+1,AI,Monkey,10,"100,000"
+2,Tama,Cat,5,"80,000"
+3,Char,Dog,12,"5,000,000"
+4,AA,Pig,3,"50,000"
+5,Ii,Weasel,2,"50,000"
+6,Gar,Goldfish,1,"5,000"
+7,Mike,Tortoise,5,"20,000"
+8,Pochi,Tiger,2,"10,000"
+9,Tom,Lion,2,"2,000"
+10,Mary,Dog,5,"80,000"
+11,ToTo,Salmon,2,"60,000"
+12,Ponta,Racoon,2,"60,000"
+</pre>
+
+</p>
+
+<p><hr size="10"><a name="nview41">onload後に CSSで色づけ td:nth-child(1)</a>
+列 カンマ区切り / 行 改行\r\n区切り <br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view41').csv2table('./data/Book12.csv',{
+             onload  : function(id,op,data,ary){
+                         $('td:nth-child(1)','#'+id).css('background','gold')
+                       }
+       });" value="Run">
+<p>
+<div id="view41"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view41').csv2table('./data/Book12.csv',{
+             <b>onload : function(id,op,data,ary){</b>
+                         $('td:nth-child(1)','#'+id).css('background','gold')
+                      <b>} </b>
+       });" value="Run">
+
+&lt;div id="view41">&lt;/div>
+</pre><pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さる,10,"100,000 "
+2,タマ,ねこ,5,"80,000 "
+3,チヤー,いぬ,12,"5,000,000 "
+4,ピー,とり,1,"3,000 "</pre>
+
+
+</p>
+
+
+
+<p><hr size="10"><a name="nview42">onload後に CSSで色づけ tr:even</a>
+
+列 カンマ区切り / 行 改行\r\n区切り <br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view42').csv2table('./data/Book12.csv',{
+             onload  : function(id,op,data,ary){
+                         $('tr:even','#'+id).css('background','#eee')
+             }
+       });" value="Run">
+
+<p>
+<div id="view42"></div>
+</p>
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view42').csv2table('./data/Book12.csv',{
+             <b>onload : function(id,op,data,ary){
+                         $('tr:even','#'+id).css('background','#eee')
+             } </b>
+       });" value="Run">
+
+&lt;div id="view42">&lt;/div>
+</pre><pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さる,10,"100,000 "
+2,タマ,ねこ,5,"80,000 "
+3,チヤー,いぬ,12,"5,000,000 "
+4,ピー,とり,1,"3,000 "</pre>
+
+</p>
+
+
+<p><hr size="10"><a name="nview43">onload後に CSSで色づけ td:odd tr:even</a>
+
+列 カンマ区切り / 行 改行\r\n区切り <br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view43').csv2table('./data/test.txt',{
+             onload  : function(id,op,data,ary){
+                         $('#'+id)
+                           .find('td:odd').css('background','#EFFFBC').end()
+                           .find('tr:even').css('background','#FFE0F2')
+            }
+       });" value="Run">
+
+
+<p>
+<div id="view43"></div>
+</p>
+
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view43').csv2table('./data/test.txt',{
+             <b>onload : function(id,op,data,ary){
+                         $('#'+id)
+                           .find('td:odd').css('background','#EFFFBC').end()
+                           .find('tr:even').css('background','#FFE0F2')
+             } </b>
+       });" value="Run">
+
+&lt;div id="view43">&lt;/div>
+       </pre><pre>No.,Title,Name,Age,Yen
+1,Test1,Toshiro,52,"10000 "
+2,Test2,Taro,28,"80000 "
+3,Test3,Shiro,12,"5000 "
+4,Test4,Gonza,38,"30000"
+5,Test5,Itiemon,41,"10000"</pre>
+
+</p>
+
+<p><hr size="10"><a name="nview44">onload後に CSSで色づけ tr:contains(hogehoge)など</a>
+
+列 カンマ区切り / 行 改行\r\n区切り <br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view44').csv2table(
+
+        //CSVファイルURL
+        './data/bench1.txt',
+
+        {
+          //CSVファイルをロード後の追加処理
+          onload  : function(id,op,data,ary){
+
+            $('#'+id)
+
+               //IEを含む行の背景色
+              .find('tr:contains(IE)').css('background','#EFFFBC').end()
+
+               //Firefoxを含む行の背景色
+              .find('tr:contains(Firefox)').css('background','#EFFFeC').end()
+
+               //Safariを含む行の背景色と文字の太さ
+              .find('tr:contains(Safari)')
+                              .css('background','#FFEaF2')
+                              .css('font-weight','900').end()
+          }
+        })" value="Run">
+
+<p>
+<a href="http://jsgt.org/mt/01/">かも日記</a>の読み込み完了時間 ブラウザ別ベンチマークテスト Safari3.1との比較
+<div id="view44"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view44').csv2table(
+
+        //CSVファイルURL
+        './data/bench1.txt',
+
+        {
+          //CSVファイルをロード後の追加処理
+          <b>          //CSVファイルをロード後の追加処理
+          onload  : function(id,op,data,ary){
+
+            $('#'+id)
+
+               //IEを含む行の背景色
+              .find('tr:contains(IE)').css('background','#EFFFBC').end()
+
+               //Firefoxを含む行の背景色
+              .find('tr:contains(Firefox)').css('background','#EFFFeC').end()
+
+               //Safariを含む行の背景色と文字の太さ
+              .find('tr:contains(Safari)')
+                              .css('background','#FFEaF2')
+                              .css('font-weight','900').end()
+          }</b>
+        })" value="Run">
+
+&lt;div id="view44">&lt;/div>
+       </pre><pre>ブラウザ,1回目,2回目,3回目,4回目,5回目
+IE6,7672,9562,10140,13141,14578
+Safari3.1,13812,4235,2516,3625,3406
+Firefox2,7625,10000,10438,10156,7438
+Firefox3b4,4288,3851,3519,3220,3227
+Opera9.5b,4515,3593,4703,3437,3422</pre>
+
+</p>
+
+
+<p><hr size="10"><a name="nview45">onload後に カスタムセレクタセレクタで4000以下を抽出</a>
+
+列 カンマ区切り / 行 改行\r\n区切り <br>
+
+<script>
+//Add new Selecter value<4000.コンテンツが4000以下の値を抽出するセレクタを作成
+jQuery.extend(jQuery.expr[":"], {
+  lt4000   : function(a,i,m){
+    var b = parseFloat(a.textContent||a.innerText||jQuery(a).text()||"");
+    return typeof b=='number'? b<4000:false;
+  }
+});
+</script>
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view45').csv2table(
+
+        //CSVファイルURL
+        './data/bench1.txt',
+
+        {
+          //CSVファイルをロード後の追加処理
+          onload  : function(id,op,data,ary){
+
+            $('#'+id)
+
+              //3000ミリ秒以下を赤文字
+              .find('td:lt4000').css('color','red').end()
+
+          }
+        })" value="Run">
+<p>
+<div id="view45"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;script>
+//Add new Selecter value&lt;4000.コンテンツが4000以下の値を抽出するセレクタを作成
+<b>jQuery.extend(jQuery.expr[":"], {
+  lt4000   : function(a,i,m){
+    var b = parseFloat(a.textContent||a.innerText||jQuery(a).text()||"");
+    return typeof b=='number'? b&lt;4000:false;
+  }
+});</b>
+&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view45').csv2table(
+
+        //CSVファイルURL
+        './data/bench1.txt',
+
+        {
+          //CSVファイルをロード後の追加処理
+          onload  : function(id,op,data,ary){
+
+            $('#'+id)
+
+              //3000ミリ秒以下を赤文字
+              <b>.find('td:lt4000').css('color','blue').end() </b>
+
+          }
+        })" value="Run">
+
+&lt;p>
+&lt;div id="view45">&lt;/div>
+&lt;/p></pre>
+       <pre>ブラウザ,1回目,2回目,3回目,4回目,5回目
+IE6,7672,9562,10140,13141,14578
+Safari3.1,13812,4235,2516,3625,3406
+Firefox2,7625,10000,10438,10156,7438
+Firefox3b4,4288,3851,3519,3220,3227
+Opera9.5b,4515,3593,4703,3437,3422</pre>
+
+</p>
+<!--//////////////   links    //////////////-->
+<div style="margin-top:20px;margin-bottom:20px;font-size:0.9em">
+<script type="text/javascript" charset="utf-8"
+src="http://jsgt.org/google/jquerygoogle.js">
+</script>
+
+<p><hr size="10"><a name="nview453">onload後に ビルトインセレクタ_csv2table_myCompで塗り分け+jQchart</a>
+:_csv2table_myComp(条件)<br>
+<style>
+/* label Y  */
+.jQchart-labelY-canvasMyID20{
+	font-size : 12px;
+}
+
+/* label Data */
+.jQchart-labelData-canvasMyID20{
+	font-size : 10px;
+}
+</style>
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view453').csv2table('./data/Book4chart.csv',{
+         use      : 'jqchart:line#canvasMyID20',
+         title    : 'This HTML is setting.config.<b>title</b>',
+         scaleY   : {min: 0,max:120,gap:10},
+         onload:function(){
+           chkComp();
+         },
+         sortable : false
+       });"
+       value="use: jqchart:line ">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view453').csv2table('./data/Book4chart2.csv',{
+         use      : 'jqchart:bar#canvasMyID20',
+         title    : 'This HTML is setting.config.<b>title</b>',
+         scaleY   : {min: 0,max:150,gap:10},
+         onload:function(){
+           chkComp();
+         },
+         sortable : false
+       });"
+       value="use: jqchart:bar ">
+
+<canvas id="canvasMyID20" height="200"></canvas>
+<div id="view453"></div>
+
+<script type="text/javascript">
+function chkComp(){
+ jQuery('table','#view453')
+  .find('td:_csv2table_myComp(<=30)').css('background','#f00').end()
+  .find('td:_csv2table_myComp(>30)').css('background','#f40').end()
+  .find('td:_csv2table_myComp(>50)').css('background','#f60').end()
+  .find('td:_csv2table_myComp(>60)').css('background','#f80').end()
+  .find('td:_csv2table_myComp(>80)').css('background','#fa0').end()
+  .find('td:_csv2table_myComp(>100)').css('background','#fd0').end()
+  .find('td:_csv2table_myComp(>150)').css('background','#ff0').end()
+} ;
+
+</script>
+<pre>&lt;!--[if IE]>
+&lt;script src="./js/excanvas/excanvas-compressed.js" type="text/javascript" >&lt;/script>
+&lt;![endif]-->
+&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.jqchart-<script>document.write($.jQchart.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;style>
+/* label Y  */
+.jQchart-labelY-canvasMyID20{
+	font-size : 12px;
+}
+
+/* label Data */
+.jQchart-labelData-canvasMyID20{
+	font-size : 10px;
+}
+&lt;/style>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view453').csv2table('./data/Book4chart.csv',{
+         use      : 'jqchart:line#canvasMyID20',
+         title    : 'This HTML is setting.config.<b>title</b>',
+         scaleY   : {min: 0,max:120,gap:10},
+         onload:function(){
+           <b>chkComp();</b>
+         },
+         sortable : false
+       });"
+       value="use: jqchart:line ">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view453').csv2table('./data/Book4chart2.csv',{
+         use      : 'jqchart:bar#canvasMyID20',
+         title    : 'This HTML is setting.config.<b>title</b>',
+         scaleY   : {min: 0,max:150,gap:10},
+         onload:function(){
+           <b>chkComp();</b>
+         },
+         sortable : false
+       });"
+       value="use: jqchart:bar ">
+
+&lt;canvas id="canvasMyID20" height="200">&lt;/canvas>
+&lt;div id="view453">&lt;/div>
+
+&lt;script type="text/javascript">
+function chkComp(){
+ jQuery('table','#view453')
+  .find('td<b>:_csv2table_myComp(&lt;=30)</b>').css('background','#f00').end()
+  .find('td<b>:_csv2table_myComp(>30)</b>').css('background','#f40').end()
+  .find('td<b>:_csv2table_myComp(>50)</b>').css('background','#f60').end()
+  .find('td<b>:_csv2table_myComp(>60)</b>').css('background','#f80').end()
+  .find('td<b>:_csv2table_myComp(>80)</b>').css('background','#fa0').end()
+  .find('td<b>:_csv2table_myComp(>100)</b>').css('background','#fd0').end()
+  .find('td<b>:_csv2table_myComp(>150)</b>').css('background','#ff0').end()
+} ;
+
+&lt;/script>
+</pre>
+
+
+<p><hr size="10"><a name="nview454">onload後に ビルトインセレクタ_csv2table_hoboNumで数値セル検索</a>
+td:_csv2table_hoboNumで検索し 数値(3桁カンマ値含む)の色をオレンジに変えてみる<br>
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view454').csv2table('./data/Book12-utf8.csv',{
+         onload:function(id,op,data,ary){
+           $('#'+id)
+             .find('td:_csv2table_hoboNum')
+             .css('color','orange')
+         }
+       });"
+       value="_csv2table_hoboNum">
+<p>
+<div id="view454"></div>
+</p>
+
+<pre>
+&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view454').csv2table('./data/Book12-utf8.csv',{
+         onload:function(id,op,data,ary){
+           $('#'+id)
+             .find('td<b>:_csv2table_hoboNum</b>')
+             .css('color','orange')
+         }
+       });"
+       value="_csv2table_hoboNum">
+
+&lt;div id="view454">&lt;/div>
+</pre>
+<pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さる,"10","100,000"
+2,タマ,ねこ,"5","80,000"
+3,チヤー,いぬ,"12","5,000,000"</pre>
+
+
+<p><hr size="10"><a name="nview54">setting.select 列の選択</a>
+<br>
+SELECT<br>
+	例 select : [ 列番号 , 列番号 ,列番号 , ...n ]<br>
+[]記号の意味は省略可ではなくJavaScript配列。列番号は、表示したい列のindex番号で0から始まる連番。型はNumber。
+<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view54').csv2table('./data/Book12-utf8.csv',{
+                    select : [0,1,3]
+                });"
+       value="Run select:[0,1,3]">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view54').csv2table('./data/Book12-utf8.csv',{
+                    select : [4,2]
+                });"
+       value="Run select:[4,2]">
+<p>
+<div id="view54"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view54').csv2table('./data/Book12-utf8.csv',{
+                    <b>select : [0,1,3]</b>
+                });"
+       value="Run select:[0,1,3]">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view54').csv2table('./data/Book12-utf8.csv',{
+                    <b>select : [4,2]</b>
+                });"
+       value="Run select:[4,2]">
+
+
+&lt;div id="view54">&lt;/div>
+       </pre><pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さる,"10","100,000"
+2,タマ,ねこ,"5","80,000"
+3,チヤー,いぬ,"12","5,000,000"</pre>
+
+</p>
+
+
+<p><hr size="10"><a name="nview541">setting.where 行の絞込み</a>
+@see <a href="http://jsgt.org/lib/jquery/plugin/csv2table/v002/setting-wheretest.htm">setting.where samples</a> <br><br>
+WHERE<br>
+	例1 where : [ { '列名' : '条件' } , '&&' , { '列名' : '条件' } , ...n ]<br>
+	例2 where : [ [ 列番号 , '条件' ] , '&&' , [ 列番号 , '条件' ] , ...n ]<br>
+[]記号の意味は省略可ではなくJavaScript配列。列番号は0から始まる連番。'列名'はStringで与えるためクオート('か")で囲み、列番号はNumberであり囲まない。
+<br>
+<hr>数値<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view541').csv2table('./data/where1.csv',{
+                    where : [{'年齢':'==5'}]
+                });"
+       value="where : [{'年齢':'==5'}]"><span style='font-size:0.8em'> 列名で指定する</span><br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view541').csv2table('./data/where1.csv',{
+                    where : [[3,'<=2']]
+                });"
+       value="where : [[3,'<=2']]">
+<span style='font-size:0.8em'> 列番号(0からはじまる連番)でも指定できます
+(*配列で記述します)</span><br>
+
+<hr>複数条件 ('&&'がAND '||'がOR)<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view541').csv2table('./data/where1.csv',{
+                    where : [{'NO':'<5'},'&&',{'年齢':'>=10'}]
+                });"
+       value="where : [{'NO':'<5'},'&&',{'年齢':'>=10'}]">
+<hr>like パーセント記号 (%でワイルドカード あいまい検索)<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view541').csv2table('./data/where1.csv',{
+                    where : [{'種類':'like イタ%'}]
+                });"
+       value="where : [{'種類':'like イタ%'}]">
+<hr>like アンダスコア記号 (_で1 つの文字と一致)<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view541').csv2table('./data/where1.csv',{
+                    where : [{'種類':'like タ__'}]
+                });"
+       value="where : [{'種類':'like タ__'}]">
+<p>
+<div id="view541"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;hr>数値&lt;br>
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view541').csv2table('./data/where1.csv',{
+                    <b>where : [{'年齢':'==5'}]</b>
+                });"
+       value="where : [{'年齢':'==5'}]"> &lt;span style='font-size:0.8em'>列名で指定する&lt;/span>&lt;br>
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view541').csv2table('./data/where1.csv',{
+                    <b>where : [[3,'&lt;=2']]</b>
+                });"
+       value="where : [[3,'&lt;=2']]"> &lt;span style='font-size:0.8em'>
+ 列番号(0からはじまる連番)でも指定できます
+(*配列で記述します)&lt;/span>&lt;br>
+
+&lt;hr>複数条件 ('&&'がAND '||'がOR)&lt;br>
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view541').csv2table('./data/where1.csv',{
+                    <b>where : [{'NO':'&lt;5'},'&&',{'年齢':'>=10'}]</b>
+                });"
+       value="where : [{'NO':'&lt;5'},'&&',{'年齢':'>=10'}]">
+&lt;hr>like パーセント記号 (%でワイルドカード あいまい検索)&lt;br>
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view541').csv2table('./data/where1.csv',{
+                    <b>where : [{'種類':'like イタ%'}]</b>
+                });"
+       value="where : [{'種類':'like イタ%'}]">
+&lt;hr>like アンダスコア記号 (_で1 つの文字と一致)&lt;br>
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view541').csv2table('./data/where1.csv',{
+                    <b>where : [{'種類':'like タ__'}]</b>
+                });"
+       value="where : [{'種類':'like タ__'}]">
+&lt;p>
+&lt;div id="view541">&lt;/div>
+
+
+&lt;div id="view54">&lt;/div>
+       </pre><pre>NO,名前,種類,年齢,金額
+1,アイ,さる,10,"100,000"
+2,タマ,ねこ,5,"80,000"
+3,チャー,いぬ,12,"5,000,000"
+4,アー,子豚,3,"50,000"
+5,イー,イタチ,2,"50,000"
+6,ガー,金魚3%だ,1,"5,000"
+7,ミケ,カメ,5,"20,000"
+8,ポチ,_ト_ラ_,2,"10,000"
+9,トム,ライオン,2,"2,000"
+10,メリー,いぬ,5,"80,000"
+11,トト,しゃけ,2,"60,000"
+12,ポンタ,タヌキ,2,"60,000"
+13,ビィ,金魚300%なのだ,3,"50,000"
+14,ポー,ハト_ラバ,8,"10,000"</pre>
+
+</p>
+
+
+
+<p><hr size="10"><a name="nview5">setting.orderBy 並べ替え</a>
+@see <a href="http://jsgt.org/lib/jquery/plugin/csv2table/v002/setting-orderby.htm">setting.orderBy samples</a> <br><br>
+ORDERBY<br>
+	例1 orderBy : [ [ '列名' ] , [ '列名' ] , ...n ]<br>
+	例2 orderBy : [ [ 列番号 ] , [ 列番号 ] , ...n ]<br>
+
+	例3 orderBy : [ [ '列名' , 'sortType' ] , [ '列名' , 'sortType' ] , ...n ]<br>
+	例4 orderBy : [ [ 列番号 , 'sortType' ] , [ 列番号 , 'sortType' ] , ...n ]<br>
+<br>
+[]記号の意味は省略可ではなくJavaScript配列。sortType は、'D'==DESC 降順 'A'==ASC 昇順  。sortType省略可。省略時はASC 昇順。列番号は0から始まる連番。'列名'はStringで与えるためクオート('か")で囲み、列番号はNumberであり囲まない。<br>
+<br>
+<hr>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    orderBy : [[0]]
+                });"
+       value="orderBy : [[0]]">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    orderBy : [[0,'D']]
+                });"
+       value="orderBy : [[0,'D']]">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    orderBy : [['年齢','A']]
+                });"
+       value="orderBy : [['年齢','A']]">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    orderBy : [['年齢','A'],['金額','D']]
+                });"
+       value="orderBy : [['年齢','A'],['金額','D']]"><br>
+
+<hr>where + orderBy<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    where : [{'金額':'>=50000'}],
+                    orderBy : [[4,'D']]
+                });"
+       value="where : [{'金額':'>=50000'}] , orderBy : [[4,'D']]">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    where : [[3,'<=5']],
+                    orderBy : [['名前','A']]
+                });"
+       value="where : [[3,'<=5']], orderBy : [['名前','A']]">
+ <br>
+<hr>select + where + orderBy<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    select : [1,2,3,4],
+                    where : [{'年齢':'==2'}],
+                    orderBy : [[3,'A']]
+                });"
+       value="select:[1,2,3,4],where : [{'年齢':'==2'}] , orderBy : [[3,'A']]">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    select : [1,2,3,4],
+                    where : [[2,'<=3']],
+                    orderBy : [['金額','D']]
+                });"
+       value="select:1,2,3,4],where : [[2,'<=3']] , orderBy :[['金額','D']]"><br>
+<span style='font-size:0.8em'>
+(*where,orderByのindexは select後の連番で記述します)</span>
+<p>
+<div id="view5"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    <b>orderBy : [[0]]</b>
+                });"
+       value="orderBy : [[0]]">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    <b>orderBy : [[0,'D']]</b>
+                });"
+       value="orderBy : [[0,'D']]">&lt;br>
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                   <b> orderBy : [['年齢','A']]</b>
+                });"
+       value="orderBy : [['年齢','A']]">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                   <b> orderBy : [['年齢','A'],['金額','D']]</b>
+                });"
+       value="orderBy : [['年齢','A'],['金額','D']]">&lt;br>
+
+where + orderBy
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    where : [{'金額':'>=50000'}],
+                    <b>orderBy : [[4,'D']]</b>
+                });"
+       value="where : [{'金額':'>=50000'}] , orderBy : [[4,'D']]">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    where : [[3,'&lt;=5']],
+                    <b>orderBy : [['名前','A']]</b>
+                });"
+       value="where : [[3,'&lt;=5']], orderBy : [['名前','A']]">
+&lt;br>
+select + where + orderBy
+&lt;span style='font-size:0.8em'>(*where,orderByのindexは select後の連番で記述します)&lt;/span>
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    select : [1,2,3,4],
+                    where : [{'年齢':'==2'}],
+                    <b>orderBy : [[3,'A']]</b>
+                });"
+       value="select:[1,2,3,4],where : [{'年齢':'==2'}] , orderBy : [[3,'A']]">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view5').csv2table('./data/Book12-4sort.csv',{
+                    select : [1,2,3,4],
+                    where : [[2,'&lt;=3']],
+                    <b>orderBy : [['金額','D']]</b>
+                });"
+       value="select:1,2,3,4],where : [[2,'&lt;=3']] , orderBy :[['金額','D']]">
+
+
+&lt;div id="view5">&lt;/div>
+       </pre><pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さる,"10",100000
+2,タマ,ねこ,"5",80000
+3,チヤー,いぬ,"12",5000000
+4,アー,子豚,3,50000
+5,イー,イタチ,2,50000
+6,ガー,金魚,1,5000
+7,ミケ,カメ,1,20000
+8,ポチ,トラ,2,10000
+9,トム,ライオン,2,2000
+10,ココ,インコ,3,80000
+11,トト,しゃけ,2,60000</pre>
+
+</p>
+
+
+
+
+<p><hr size="10"><a name="nview543">setting.limit 行数制限</a>
+<br><br>
+LIMIT<br>
+	例1 limit : [ rowCount ]<br>
+	例2 limit : [ offset,rowCount ]<br>
+<br>
+[]記号の意味は省略可ではなくJavaScript配列。引数が 1 つの場合、その値は、rowCountで冒頭からの行数を表す。 引数が 2 つの場合、第一引数はoffsetで、最初のレコードまでのオフセットを表し、2 つ目の引数は、rowCountで最大レコード数を表す。最初のレコードのオフセット値は 0（1 ではない）。 もし、limitがnull、あるいは、rowCountが最大レコード数より大きければ、最大レコード数。offset、rowCountともにNumber。<br>
+<br>
+<hr>
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                    limit : [3]
+                });"
+       value="limit : [3]">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                   limit : [0,5]
+                });"
+       value="limit : [0,5]">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                   limit : [3,15]
+                });"
+       value="limit : [3,15]">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                    orderBy : [['金額','D']],
+                    limit   : [3]
+                });"
+       value="orderBy : [['金額','D']],limit : [3]">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                    where : [{'年齢':'>=3'}],
+                    orderBy : [['年齢','D']],
+                    limit   : [5]
+                });"
+       value="where : [{'年齢':'>=3'}],orderBy : [['年齢','D']],limit : [5]">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv');"
+       value="limitなし">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                    limit : null
+                });"
+       value="limit : null">
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                    limit : [0]
+                });"
+       value="limit : [0]">
+<p>
+<div id="view543"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                    <b>limit : [3]</b>
+                });"
+       value="limit : [3]">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                    <b>limit : [0,5]</b>
+                });"
+       value="limit : [0,5]">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                    <b>limit : [3,15]</b>
+                });"
+       value="limit : [3,15]">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                    orderBy : [['金額','D']],
+                    <b>limit   : [3]</b>
+                });"
+       value="orderBy : [['金額','D']],limit : [3]">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                    where : [{'年齢':'>=3'}],
+                    orderBy : [['年齢','D']],
+                    <b>limit   : [5]</b>
+                });"
+       value="where : [{'年齢':'>=3'}],orderBy : [['年齢','D']],limit : [5]">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv');"
+       value="limitなし">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                    <b>limit : null</b>
+                });"
+       value="limit : null">
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view543').csv2table('./data/Book12-4sort.csv',{
+                    <b>limit : [0]</b>
+                });"
+       value="limit : [0]">
+
+&lt;div id="view543">&lt;/div>
+       </pre><pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さる,"10",100000
+2,タマ,ねこ,"5",80000
+3,チヤー,いぬ,"12",5000000
+4,アー,子豚,3,50000
+5,イー,イタチ,2,50000
+6,ガー,金魚,1,5000
+7,ミケ,カメ,1,20000
+8,ポチ,トラ,2,10000
+9,トム,ライオン,2,2000
+10,ココ,インコ,3,80000
+11,トト,しゃけ,2,60000</pre>
+
+</p>
+
+
+
+
+
+<p><hr size="10"><a name="nview52">setting.removeDoubleQuote</a>
+列 カンマ区切り / 行 改行\r\n区切り (removeDoubleQuote : false 文字囲み""を残す)<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view52').csv2table('./data/Book12-utf8.csv',{
+                    removeDoubleQuote : false
+                });"
+       value="Run">
+<p>
+<div id="view52"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view52').csv2table('./data/Book12-utf8.csv',{
+                    <b>removeDoubleQuote : false</b>
+                });"
+       value="Run">
+
+&lt;div id="view52">&lt;/div>
+       </pre><pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さる,"10","100,000"
+2,タマ,ねこ,"5","80,000"
+3,チヤー,いぬ,"12","5,000,000"</pre>
+
+</p>
+
+
+<p><hr size="10"><a name="nview61">列 カンマ区切り / 行 改行\r\n区切り (データ内に\r\nあり) rfc4180 2-6</a>
+test for <a href="http://www.ietf.org/rfc/rfc4180.txt">rfc4180</a> 2-6 Fields containing line breaks (CRLF)<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view61').csv2table('./data/Book12-utf8-rn.csv');"
+       value="Run">
+<p>
+<div id="view61"></div>
+</p>
+
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view61').csv2table('./data/Book12-utf8-rn.csv');"
+       value="Run">
+&lt;p>
+&lt;div id="view61">&lt;/div>
+       </pre><pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さ""る,"10
+00","100,000"
+2,タマ,ねこ,"5","80,000"
+3,チヤー,いぬ,"12","5,000,000"</pre>
+
+
+</p>
+
+<p><hr size="10"><a name='nview6'>列 カンマ区切り / 行 改行\r\n区切り (""のエスケープあり)  rfc4180 2-7</a>
+test for <a href="http://www.ietf.org/rfc/rfc4180.txt">rfc4180</a> 2-7 escaped double-quotes<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view6').csv2table('./data/Book12-utf8-comm.csv');"
+       value="Run">
+
+<p>
+<div id="view6"></div>
+</p>
+
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view6').csv2table('./data/Book12-utf8-comm.csv');"
+       value="Run">
+
+&lt;div id="view6">&lt;/div>
+       </pre><pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さ""る,"10""00","100,000"
+2,タマ,ねこ,"5","80,000"
+3,チヤー,いぬ,"12","5,000,000"</pre>
+
+</p>
+
+<p><hr size="10"><a name="nview1">列 タブ区切り / 行 改行\r\n区切り</a>
+Delimited by a line break (CRLF).one or more  fields, separated by Tab.<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view1').csv2table('./data/test-utf8.txt',{col_sep:'\t'});"
+       value="Run">
+<p>
+<div id="view1"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view1').csv2table('./data/test-utf8.txt',{col_sep:'\t'});"
+       value="Run">
+
+&lt;div id="view1">&lt;/div>
+       </pre><pre>受付	成約	名前	金額
+20070115	20071225	あいうえお	20000
+20070506	20070711	かきくけこ	10000
+20080123	20080211	さしすせそ	15000
+20050325	20050530	たちつてと	2000
+20080525	20080606	なにぬねの	50000</pre>
+
+
+<br>
+<br>
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view2').csv2table('./data/zisseki-tb.txt',{col_sep:'\t'});"
+       value="Run">
+
+<p>
+<div id="view2"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view2').csv2table('./data/zisseki-tb.txt',{col_sep:'\t'});"
+       value="Run">
+
+&lt;div id="view2">&lt;/div>
+       </pre><pre>年月日	納期	内容	希望価格	価格	メモ
+20080216	20080217	GoogelMapで地図を表示させ「マーカーボタン」クリックでマーカー表示、更にマーカークリックで吹き出しが現れる。	1500	1500	GoogleMaps+カスタマイズ
+20080216	20080217	「ユーザーの声を見る」みたいに「ふわっ～と」文字を表示させたい。	1500	1500	jQuery+カスタマイズ
+20080210	20080210	Ajaxなツリーメニューを作りたい	3000	3000	YUI+カスタマイズ
+20080201	20080201	腕立て伏せ198回	5000	0	出来ませんでした
+20080129	20080130	エクセル内の指定した場所のデータをグラフ化したい。	2000	2000	jQchart+カスタマイズ
+20080127	20080127	WebサーバのCSVデータをブラウザへスプレッドシート表示など	2000	2000	カスタマイズ
+20080126	20080127	CSV複数データによる複数折れ線グラフ(別サーバーからのデータインポート)など	3000	3000	jQchart+カスタマイズ
+20080124	20080125	イントラネットのWebサーバに置かれたCSVファイルを読み込み、ブラウザで折れ線グラフを表示したい	2000	3000	jQchart+カスタマイズ</pre>
+
+</p>
+
+
+<p><hr size="10"><a name="nview32">列 タブ区切り / 行 ; 区切り</a>
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view32').csv2table('./data/zisseki-utf8-tb-sc.txt',{col_sep:'\t',row_sep:';'});"
+       value="Run">
+<p>
+<div id="view32"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view32').csv2table('./data/zisseki-utf8-tb-sc.txt',{col_sep:'\t',row_sep:';'});"
+       value="Run">
+
+&lt;div id="view32">&lt;/div>
+       </pre><pre>年月日	納期	内容	希望価格	価格	メモ;20080216	20080217	GoogelMapで地図を表示させ「マーカーボタン」クリックでマーカー表示、更にマーカークリックで吹き出しが現れる。	1500	1500	GoogleMaps+カスタマイズ;20080216	20080217	「ユーザーの声を見る」みたいに「ふわっ～と」文字を表示させたい。	1500	1500	jQuery+カスタマイズ;20080210	20080210	Ajaxなツリーメニューを作りたい	3000	3000	YUI+カスタマイズ;20080201	20080201	腕立て伏せ198回	5000	0	出来ませんでした;20080129	20080130	エクセル内の指定した場所のデータをグラフ化したい。	2000	2000	jQchart+カスタマイズ;20080127	20080127	WebサーバのCSVデータをブラウザへスプレッドシート表示など	2000	2000	カスタマイズ;20080126	20080127	CSV複数データによる複数折れ線グラフ(別サーバーからのデータインポート)など	3000	3000	jQchart+カスタマイズ;20080124	20080125	イントラネットのWebサーバに置かれたCSVファイルを読み込み、ブラウザで折れ線グラフを表示したい	2000	3000	jQchart+カスタマイズ;
+</pre>
+
+</p>
+
+<p><hr size="10"><a name="nview7">列 セミコロン区切り / 行 改行\r\n区切り</a>
+Delimited by a line break (CRLF).one or more  fields, separated by Semicolon.<br>
+
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view7').csv2table('./data/zisseki-utf8-sc.txt',{col_sep:';'});"
+       value="Run">
+<p>
+<div id="view7"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view7').csv2table('./data/zisseki-utf8-sc.txt',{col_sep:';'});"
+       value="Run">
+
+&lt;div id="view7">&lt;/div>
+       </pre><pre>年月日;納期;内容;希望価格;価格;メモ
+20080216;20080217;GoogelMapで地図を表示させ「マーカーボタン」クリックでマーカー表示、更にマーカークリックで吹き出しが現れる。;1500;1500;GoogleMaps+カスタマイズ
+20080216;20080217;「ユーザーの声を見る」みたいに「ふわっ～と」文字を表示させたい。;1500;1500;jQuery+カスタマイズ
+20080210;20080210;Ajaxなツリーメニューを作りたい;3000;3000;YUI+カスタマイズ
+20080201;20080201;腕立て伏せ198回;5000;0;出来ませんでした
+20080129;20080130;エクセル内の指定した場所のデータをグラフ化したい。;2000;2000;jQchart+カスタマイズ
+20080127;20080127;WebサーバのCSVデータをブラウザへスプレッドシート表示など;2000;2000;カスタマイズ
+20080126;20080127;CSV複数データによる複数折れ線グラフ(別サーバーからのデータインポート)など;3000;3000;jQchart+カスタマイズ
+20080124;20080125;イントラネットのWebサーバに置かれたCSVファイルを読み込み、ブラウザで折れ線グラフを表示したい;2000;3000;jQchart+カスタマイズ
+</pre>
+
+</p>
+
+<p><hr size="10"><a name="nview9">コンテンツ内の改行を&amp;lt;BR>へ変換する</a>
+<br>バージョンv0.02-b-4.7まではコンテンツ内の改行を除去していましたが、v0.02-b-4.8以降は、オプションの crlf2br: true で<br>に置き換えられるようになりました。
+※コンテンツ内に改行がある場合はそのブロックをダブルクオート(")で囲ってください。
+<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view9').csv2table('./data/data-br-1.csv',{crlf2br: true});"
+       value="Run">
+<p>
+<div id="view9"></div>
+</p>
+
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view9').csv2table('./data/data-br-1.csv'<b>,{crlf2br: true}</b>);"
+       value="Run">
+
+&lt;div id="view9">&lt;/div>
+       </pre>
+<pre>
+ＮＯ,名前,種類,年齢,金額
+1,アイ,さる,10,"100,000 "
+2,タマ,<span style="color:red">"ね
+こ"</span>,5,"80,000 "
+3,チヤー,いぬ,12,"5,000,000 "
+4,ピー,とり,1,"3,000 "
+</pre>
+</p>
+
+
+<p><hr size="10"><a name="nview31">set CSS with stylesheet (.csv2table-table-th)</a>
+Delimited by a line break (CRLF).one or more  fields, separated by commas.<br>
+列 カンマ区切り / 行 改行\r\n区切り (CSSで色づけ !importantを使います。非推奨 Non-recommendation / CSSで色づけは、 csv2table-0.02-b-3x以降は、テーマローラーで指定する方式に変えたいと思っています。行うなら上記のonload後、クロスブラウザなjQueryのCSSメソッドを使うのが安全。)<br>
+<p>
+version:csv2table-0.02-b-4.4で$.csv2table.cssReset()メソッドを追加しました。上の「デフォルトCSSのリセット方法参照」
+</p>
+
+<style>
+#view31 .csv2table-table-th {
+  background-color  : #fff88c !important;
+  border-color      : #aaa    !important;
+  font-weight       : 100     !important;
+}
+</style>
+<input
+       class="btn1"
+       type    = "button"
+       onclick = "$('#view31').csv2table('./data/Book12.csv');"
+       value="Run">
+<p>
+<div id="view31"></div>
+</p>
+<pre>&lt;script src="./js/jquery-<script>document.write($.fn.jquery)</script>.min.js" type="text/javascript">&lt;/script>
+&lt;script src="./js/jquery.<script>document.write($.csv2table.name)</script>-<script>document.write($.csv2table.version)</script>.js" type="text/javascript" charset="utf-8">&lt;/script>
+
+&lt;style>
+#view31 .csv2table-table-th {<b>
+  background-color  : #fff88c !important;
+  border-color      : #aaa    !important;
+  font-weight       : 100     !important;</b>
+}
+&lt;/style>
+
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#view31').csv2table('./data/Book12.csv');"
+       value="Run">
+
+&lt;div id="view31">&lt;/div>
+</pre><pre>ＮＯ,名前,種類,年齢,金額
+1,アイ,さる,10,"100,000 "
+2,タマ,ねこ,5,"80,000 "
+3,チヤー,いぬ,12,"5,000,000 "
+4,ピー,とり,1,"3,000 "</pre>
+</p>
+
+
+<p>
+たとえば、エクセルで ファイル->名前を付けて保存->テキスト(タブ区切り) (*.txt)などで保存すると、ファイル名指定だけでそのまま読み込めます。
+p.s.エクセルのユニコード保存だとutf-16リトルエンディアンになるのですが、どうも文字化け的にあまり芳しくないので、少し面倒でもメモ帳などでutf-8へ変換して使うことをお勧めします。
+ </p>
+
+
+
+
+
+<div id="dbg"></div>
+
+</div>
+
+<hr>
+<!--//////////////   source    //////////////-->
+<p title="source">
+
+<!--  class="samples" -->
+
+書式  jQuery(セレクタ).csv2table(CSVファイルURL,option);
+
+option<pre>
+    op = $.csv2table.setting[id] = $.extend({
+      url                : url,
+      nowloadingImg      : $.csv2table.loadImg,              //Image of now loading...
+      nowloadingMsg      : 'now loading...',                 //Massege of  now loading...
+      sortNImg           : $.csv2table.sortNImg,             //Sort IMG N
+      sortDImg           : $.csv2table.sortDImg,             //Sort IMG D
+      sortAImg           : $.csv2table.sortAImg,             //Sort IMG A
+      removeDoubleQuote  : true,                             // remove " of "hogehoge"
+      col_midasi         : 0,                                //
+      row_sep            : '\n',                             //Separator of rows. default '\n'
+      col_sep            : ',',                              //Separator(,|\t|;) of cols. default ','
+      sortable           : true,                             //col sort
+      select             : '*',                              //select col lists. default '*' is all cols.
+      orderBy            : null,                             //array of sort col. orderBy:[[colNo|'colName','sortType']]
+      where              : null,                             //array of where : [{'ColName':'condition'}] etc.
+      limit              : null,                             //array of limit : [offset,len]
+      col0color          : true,                             //col[0] color sync jQchart line_strokeStyle
+      numArignRight      : true,                             //Set the Number TD to "textAlign : 'right'"
+      onload             : null,                             //collback function (id,op,data,ary) {}
+      use                : null,                             // 'jqchart:line#canvasID'
+      className_div      : 'csv2table-div',                  //className
+      className_table    : 'csv2table-table',                //className
+      className_table_th : 'csv2table-table-th',             //className
+      className_table_td : 'csv2table-table-td',             //className
+      className_hoboNum  : 'csv2table-hoboNum',              //className
+      className_sortMark : 'csv2table-sortMark',             //className
+      className_legends  : 'csv2table-legends'               //className
+    },setting);</pre>
+
+
+画像  csv2tableを実行前に次のように指定することで、好きなソート用画像とnow loading画像を使えます。
+
+<pre>
+  $.extend($.csv2table,{
+    loadImg  : './img/icon-loadinfo.gif', //Image of now loading...<img src="./img/icon-loadinfo.gif" width='15' height='15'>
+    sortNImg : './img/icon-n.gif',        //ソート初期画像<img src="./img/icon-n.gif">
+    sortDImg : './img/icon-d.gif',        //降順画像<img src="./img/icon-d.gif">
+    sortAImg : './img/icon-a.gif'         //昇順画像<img src="./img/icon-a.gif">
+  })
+</pre>
+* csv2table-0.02-b-2.5 以降、下記のように個々に引数でも指定できます。<br>
+<input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#viewIcon1').csv2table('./data/Book12-utf8.csv',{
+                    nowloadingImg : './img/ajax-loader.gif',
+                    sortNImg : './img/icon-n-orange.gif',
+                    sortDImg : './img/icon-d-orange.gif',
+                    sortAImg : './img/icon-a-orange.gif'
+                });"
+       value="Run">
+<div id="viewIcon1"></div>
+<pre>
+&lt;input
+       class   = "btn1"
+       type    = "button"
+       onclick = "$('#viewIcon1').csv2table('./data/Book12-utf8.csv',{
+                    <b>nowloadingImg</b> : './img/ajax-loader.gif',
+                    <b>sortNImg</b> : './img/icon-n-orange.gif',
+                    <b>sortDImg</b> : './img/icon-d-orange.gif',
+                    <b>sortAImg</b> : './img/icon-a-orange.gif'
+                });"
+       value="Run">
+&lt;div id="viewIcon1">&lt;/div>
+</pre>
+</p>
+
+
+<!--//////////////   links    //////////////-->
+|<a href="http://jsgt.org/mt/01/"><font size="-1">Blog</font></a> |
+<a href="http://jsgt.org/lib/jquery/plugin/csv2table/v002/test.htm">Demo</a> |
+<a href="http://wassr.jp/channel/jquery">Wassr</a> |
+ jQuery &#8250; Downloads &#8250; Plugins <a href="http://plugins.jquery.com/project/csv2table">&#8250; csv2table </a> |
+( <a href="http://plugins.jquery.com/project/jQchart">&#8250; jQchart </a> )
+
+
+</div>
+
+</p><br clear="all">
+<!--//////////////   links    //////////////-->
+
+</body>
+</html>
