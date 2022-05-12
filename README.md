@@ -10,3 +10,4 @@ Public Domain
 memo: Colorization<br>
 <a href=http://jsgt.org/lib/jquery/plugin/csv2table/v002/test-color.htm><img src="http://jsgt.org/lib/jquery/plugin/csv2table/v002/img/demo.png"></a>
 
+//
